@@ -1,0 +1,36 @@
+
+.calendar-pedido-container{
+    width: 100%;
+    display: flex;
+    flex-wrap:wrap;
+    margin-left:10px;
+    padding-top:10px;
+}
+
+#calendar {
+    max-width: 400px;
+}
+
+.fc-header-toolbar{
+    padding:3px;
+    font-size: 10px;
+}
+.fc-toolbar-chunk{
+    padding:3px;
+}
+
+.pedido-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 10px 0;
+    background-color: #f9f9f9;
+    margin-left:10px;
+    width: 360px;
+}
+.pedido-card h4 {
+    margin: 0;
+}
+.pedido-card p {
+    margin: 5px 0;
+}
