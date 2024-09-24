@@ -1,3 +1,6 @@
+let productos = []; // Declara la variable productos a nivel global
+
+
 //OBTENER PRODUCTOS DESDE LA API
 async function obtenerProductos(){
     try {
@@ -6,7 +9,7 @@ async function obtenerProductos(){
         if (!respuesta.ok) {
             throw new Error('Error al obtener los productos');
         }
-        const productos = await respuesta.json();
+        productos = await respuesta.json(); // Asigna directamente al array global
         return productos;
     } catch {
         console.log("Error")
@@ -32,9 +35,11 @@ function generarOpciones(productos){
 
 //CARGAR CUANDO CARGUE EL DOM
 document.addEventListener('DOMContentLoaded', async ()=>{
-    const productos = await obtenerProductos();
-    if (productos){
-        generarOpciones(productos)
+    await obtenerProductos(); // Espera a que los productos se carguen
+    if (productos.length > 0) {
+        generarOpciones(productos);
+    } else {
+        console.log('No se encontraron productos');
     }
 })
 
@@ -43,22 +48,37 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 const productosSeleccionados = [];
 
         function agregarProducto() {
-            const producto = document.getElementById('producto').value;
-            const cantidad = document.getElementById('cantidad').value;
-            const horario = document.getElementById('hora').value;
-
-
-            productosSeleccionados.push({ producto, cantidad, horario });
-            mostrarResumen();
+            const nombre = document.getElementById('nombre').value;
+            const telefono = document.getElementById('telefono').value;
+            const hora = document.getElementById('hora').value;
+            const productoId = document.getElementById('producto').value; // ID del producto seleccionado
+            const cantidad = parseInt(document.getElementById('cantidad').value, 10); // Asegúrate de que sea un número
+        
+            // Busca el producto correspondiente para obtener el precio
+            console.log('productoId:', productoId, 'productos:', productos);
+            const productoSeleccionado = productos.find(prod => prod.id_producto === Number(productoId)); // Convierte productoId a número
+        
+            if (productoSeleccionado) {
+                const { nombre: nombreProducto, precio } = productoSeleccionado; // Obtén el nombre y el precio
+        
+                productosSeleccionados.push({ nombre, telefono, hora, id_producto: productoId, cantidad, precio: precio });
+                mostrarResumen();
+            } else {
+                console.error('Producto no encontrado', { productoId, productos }); // Agrega más información para depuración
+            }
         }
 
         function mostrarResumen() {
             const resumenDiv = document.getElementById('resumen');
             resumenDiv.innerHTML = '<h4>Resumen del Pedido:</h4>';
             productosSeleccionados.forEach(item => {
-                resumenDiv.innerHTML += `<p>Cantidad: ${item.cantidad} x ${item.producto}</p> <p>Precio: PRECIO</p><hr>`;
+                resumenDiv.innerHTML += `<p>Nombre: ${item.nombre}</p>
+                    <p>Telefono: ${item.telefono}</p>
+                    <p>Hora: ${item.hora}</p>
+                    <p>Cantidad: ${item.cantidad} x ${item.id_producto}</p>
+                    <p>Precio: ${item.precio}</p><hr>`;
             });
-
+        
             // Abrir el modal
             document.getElementById('pedidoModal').style.display = 'block';
         }
@@ -67,13 +87,44 @@ const productosSeleccionados = [];
             document.getElementById('pedidoModal').style.display = 'none';
         }
 
-        function enviarPedido() {
-            alert('Pedido enviado con éxito!');
-            // Aquí puedes implementar la lógica para enviar los datos a tu servidor
-            limpiarFormulario();
-            cerrarModal();
+        async function enviarPedido() {
+            const nombre = document.getElementById('nombre').value;
+            const telefono = document.getElementById('telefono').value;
+            const hora = document.getElementById('hora').value;
+            
+            const pedidoData = {
+                nombre: nombre,
+                telefono: telefono,
+                hora: hora,
+                productos: productosSeleccionados // Cambiado a un arreglo de productos
+            };
+            
+            try {
+                const response = await fetch('http://localhost:4000/api/pedidos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json' // Indicamos que estamos enviando JSON
+                    },
+                    body: JSON.stringify(pedidoData) // Convertimos el objeto a JSON
+                });
+        
+                if (!response.ok) {
+                    throw new Error('Error al enviar el pedido');
+                }
+        
+                const resultado = await response.json();
+                alert('Pedido enviado con éxito!');
+        
+                limpiarFormulario();
+                cerrarModal();
+        
+            } catch (error) {
+                console.error('Hubo un problema con la solicitud:', error);
+                alert('Hubo un error al enviar el pedido. Por favor, intenta de nuevo.');
+            }
         }
-
+        
+        
         function limpiarFormulario() {
             document.getElementById('pedidoForm').reset();
             productosSeleccionados.length = 0; // Limpiar el array
@@ -148,4 +199,4 @@ function mostrarPedidos(fecha) {
 }
 
 
-
+//AÑADIR PEDIDO
