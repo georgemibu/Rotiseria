@@ -90,6 +90,7 @@ function mostrarPedidos(fecha) {
         return;
     }
 
+
     pedidos.forEach(pedido => {
         const card = document.createElement('div');
         card.className = 'pedido-card';
@@ -101,5 +102,8 @@ function mostrarPedidos(fecha) {
         `;
         pedidosDiv.appendChild(card);
     });
+    
 }
+
+
 
