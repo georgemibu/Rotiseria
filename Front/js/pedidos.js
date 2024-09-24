@@ -1,3 +1,45 @@
+//OBTENER PRODUCTOS DESDE LA API
+async function obtenerProductos(){
+    try {
+        const respuesta = await fetch('http://localhost:4000/productos');
+        console.log(respuesta)
+        if (!respuesta.ok) {
+            throw new Error('Error al obtener los productos');
+        }
+        const productos = await respuesta.json();
+        return productos;
+    } catch {
+        console.log("Error")
+    }
+
+}
+console.log(obtenerProductos())
+
+
+//FUNCION PARA GENERAR LAS OPCIONES EN EL SELECT
+function generarOpciones(productos){
+    const selectProducto = document.getElementById('producto');
+    //limpiar opciones existentes
+    selectProducto.innerHTML ='';
+    //Crear la opcion de cada producto obtenido
+    productos.forEach(producto=>{
+        const option = document.createElement('option');
+        option.value = producto.id_producto;
+        option.textContent = producto.nombre;
+        selectProducto.appendChild(option)
+    })
+}
+
+//CARGAR CUANDO CARGUE EL DOM
+document.addEventListener('DOMContentLoaded', async ()=>{
+    const productos = await obtenerProductos();
+    if (productos){
+        generarOpciones(productos)
+    }
+})
+
+
+//SUMAR PEDIDOS
 const productosSeleccionados = [];
 
         function agregarProducto() {

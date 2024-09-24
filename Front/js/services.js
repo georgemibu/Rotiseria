@@ -5,7 +5,6 @@ async function getPedidos(){
     return resJson;
 }
 
-console.log(getPedidos())
 
 
 async function getClientes(){
@@ -13,7 +12,6 @@ async function getClientes(){
     const resJson = await res.json();
     return resJson;
 }
-console.log(getClientes())
 
 async function getProductos(){
     const res = await fetch('http://localhost:4000/productos');
@@ -21,7 +19,6 @@ async function getProductos(){
     return resJson;
 }
 
-console.log(getProductos())
 
 async function getUsuarios(){
     const res = await fetch('http://localhost:4000/usuarios');
@@ -29,7 +26,6 @@ async function getUsuarios(){
     return resJson;
 }
 
-console.log(getUsuarios())
 
 
 async function getDetallesPedido(){
@@ -38,4 +34,3 @@ async function getDetallesPedido(){
     return resJson;
 }
 
-console.log(getDetallesPedido())
