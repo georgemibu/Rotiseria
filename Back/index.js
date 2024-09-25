@@ -51,30 +51,27 @@ app.get('/detallespedido', async (req, res)=>{
 
 
 //SOLICITUD POST PEDIDOS
-// SOLICITUD POST PEDIDOS
 app.post('/api/pedidos', async (req, res) => {
     const connection = await database.getConnection();
-    console.log(req.body); // Para depuración
 
-    const { nombre, telefono, hora, productos } = req.body;
-    console.log(nombre, telefono, hora, productos)
+    const { nombre, direccion, telefono, hora, productos } = req.body;
     // Validar que los datos estén completos
-    if (!nombre || !telefono || !hora || !productos || productos.length === 0) {
+    if (!nombre || !direccion|| !telefono || !hora || !productos || productos.length === 0) {
         return res.status(400).json({ error: 'Por favor, completa todos los campos' });
     }
 
     try {
         // 1. Verificar si el cliente ya existe, si no, crear uno nuevo
-        const sqlCliente = `SELECT id_cliente FROM clientes WHERE telefono = ?`;
-        const clientes = await connection.query(sqlCliente, [telefono]);
+        const sqlCliente = `SELECT id_cliente FROM clientes WHERE nombre = ?`;
+        const clientes = await connection.query(sqlCliente, [nombre]);
 
         let idCliente;
         if (clientes.length > 0) {
             idCliente = clientes[0].id_cliente; // Cliente existente
         } else {
             // Crear un nuevo cliente
-            const sqlNuevoCliente = `INSERT INTO clientes (nombre, telefono) VALUES (?, ?)`;
-            const resultCliente = await connection.query(sqlNuevoCliente, [nombre, telefono]);
+            const sqlNuevoCliente = `INSERT INTO clientes (nombre, telefono, direccion) VALUES (?, ?, ?)`;
+            const resultCliente = await connection.query(sqlNuevoCliente, [nombre, telefono, direccion]);
             idCliente = resultCliente.insertId; // Obtener nuevo id_cliente
         }
 
@@ -82,7 +79,7 @@ app.post('/api/pedidos', async (req, res) => {
         const total = productos.reduce((acc, prod) => acc + (prod.precio * prod.cantidad), 0);
         const sqlPedido = `
             INSERT INTO Pedidos (id_cliente, horario_pedido, estado, total)
-            VALUES (?, ?, 'pendiente', ?)
+            VALUES (?, ?, 'pendiente', 100)
         `;
         const valuesPedido = [idCliente, hora, total];
         const resultPedido = await connection.query(sqlPedido, valuesPedido);
@@ -97,12 +94,14 @@ app.post('/api/pedidos', async (req, res) => {
         return connection.query(sqlDetalles, [idPedido, prod.id_producto, prod.cantidad]);
     });
         await Promise.all(detallesPromises); // Esperar a que se inserten todos los detalles
-
         res.status(201).json({ mensaje: 'Pedido guardado correctamente', pedidoId: idPedido });
+    
     } catch (err) {
         console.error('Error al insertar el pedido en la base de datos:', err);
         return res.status(500).json({ error: 'Error al guardar el pedido' });
     } finally {
-        connection.release(); // Liberar la conexión
+        console.log("hecho")
     }
 });
+
+

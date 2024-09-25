@@ -49,6 +49,7 @@ const productosSeleccionados = [];
 
         function agregarProducto() {
             const nombre = document.getElementById('nombre').value;
+            const direccion = document.getElementById('direccion').value;
             const telefono = document.getElementById('telefono').value;
             const hora = document.getElementById('hora').value;
             const productoId = document.getElementById('producto').value; // ID del producto seleccionado
@@ -61,7 +62,7 @@ const productosSeleccionados = [];
             if (productoSeleccionado) {
                 const { nombre: nombreProducto, precio } = productoSeleccionado; // Obtén el nombre y el precio
         
-                productosSeleccionados.push({ nombre, telefono, hora, id_producto: productoId, cantidad, precio: precio });
+                productosSeleccionados.push({ nombre, direccion, telefono, hora, id_producto: productoId, cantidad, precio: precio });
                 mostrarResumen();
             } else {
                 console.error('Producto no encontrado', { productoId, productos }); // Agrega más información para depuración
@@ -73,6 +74,7 @@ const productosSeleccionados = [];
             resumenDiv.innerHTML = '<h4>Resumen del Pedido:</h4>';
             productosSeleccionados.forEach(item => {
                 resumenDiv.innerHTML += `<p>Nombre: ${item.nombre}</p>
+                    <p>Dirección: ${item.direccion}</p>
                     <p>Telefono: ${item.telefono}</p>
                     <p>Hora: ${item.hora}</p>
                     <p>Cantidad: ${item.cantidad} x ${item.id_producto}</p>
@@ -89,15 +91,39 @@ const productosSeleccionados = [];
 
         async function enviarPedido() {
             const nombre = document.getElementById('nombre').value;
+            const direccion = document.getElementById('direccion').value;
             const telefono = document.getElementById('telefono').value;
-            const hora = document.getElementById('hora').value;
-            
+            const hora = parseInt(document.getElementById('hora').value, 10); // Convertir a entero
+            const productoId = document.getElementById('producto').value; // Agregar esta línea para obtener el id del producto
+        
+            const productoSeleccionado = productos.find(prod => prod.id_producto === Number(productoId)); // Convierte productoId a número
+        
+            if (productoSeleccionado) {
+                const { nombre: nombreProducto, precio } = productoSeleccionado; // Obtén el nombre y el precio
+        
+                productosSeleccionados.push({ 
+                    nombre, 
+                    direccion, 
+                    telefono, 
+                    hora, 
+                    id_producto: productoId, 
+                    cantidad, 
+                    precio 
+                });
+                mostrarResumen();
+            } else {
+                console.error('Producto no encontrado', { productoId, productos }); // Agrega más información para depuración
+            }
+        
             const pedidoData = {
                 nombre: nombre,
+                direccion: direccion,
                 telefono: telefono,
                 hora: hora,
                 productos: productosSeleccionados // Cambiado a un arreglo de productos
             };
+        
+            console.log("Datos a enviar:", pedidoData);
             
             try {
                 const response = await fetch('http://localhost:4000/api/pedidos', {
@@ -108,18 +134,27 @@ const productosSeleccionados = [];
                     body: JSON.stringify(pedidoData) // Convertimos el objeto a JSON
                 });
         
+                console.log("Status code:", response.status); // Verificar el status code
+        
+                // Verificar si el contenido es JSON
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    const resultado = await response.json();
+                    console.log("JSON response:", resultado);
+                } else {
+                    console.log("Response is not JSON:", await response.text());
+                }
+        
                 if (!response.ok) {
                     throw new Error('Error al enviar el pedido');
                 }
         
-                const resultado = await response.json();
                 alert('Pedido enviado con éxito!');
         
                 limpiarFormulario();
                 cerrarModal();
         
             } catch (error) {
-                console.error('Hubo un problema con la solicitud:', error);
+                console.error('Hubo un problema con la solicitud:', error.message);
                 alert('Hubo un error al enviar el pedido. Por favor, intenta de nuevo.');
             }
         }
